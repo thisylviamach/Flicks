@@ -11,10 +11,12 @@ import AFNetworking
 import MBProgressHUD
 
 
-class MovieViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class MovieViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate{
 
     
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var searchBar: UISearchBar!
+    var filteredData: [NSDictionary]!
     
     var movies:[NSDictionary]?
     
@@ -27,6 +29,8 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         
         tableView.dataSource = self
         tableView.delegate = self
+        searchBar.delegate = self
+        
        
         
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
@@ -43,7 +47,9 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
                     
                     MBProgressHUD.hide(for: self.view, animated: false)
                     self.movies = dataDictionary["results"] as? [NSDictionary]
+                    self.filteredData = self.movies
                     self.tableView.reloadData()
+                    
                 }
             }
         }
@@ -52,7 +58,24 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         
         // Do any additional setup after loading the view.
     }
-
+    
+    func searchBar(_ searchBar:UISearchBar, textDidChange searchText:String){
+        
+        //movie is unsafe, becuase movie can be nil
+        // want to protect my process if movie is empty
+        // how?
+        guard let movies = self.movies else {
+            return
+        }
+        
+        filteredData = searchText.isEmpty ? movies : movies.filter({(movie: NSDictionary) -> Bool in
+            // If dataItem matches the searchText, return true to include it
+            let title = movie["title"] as! String
+            return title.range(of: searchText, options: .caseInsensitive) != nil
+        })
+        
+        tableView.reloadData()
+    }
     func refreshControlAction(_ refreshControl:UIRefreshControl){
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")!
@@ -70,9 +93,13 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         // Dispose of any resources that can be recreated.
     }
     
+    //
+    
+    
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
-        if let movies = movies {
-            return movies.count
+        if let filteredData = filteredData {
+            return filteredData.count
         }else{
             return 0
         }
@@ -81,7 +108,7 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
     
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath ) as! MovieCell
-        let movie = movies![indexPath.row]
+        let movie = filteredData![indexPath.row]
         let title = movie["title"] as! String
         let overview = movie["overview"] as! String
         let baseUrl = "https://image.tmdb.org/t/p/w500"

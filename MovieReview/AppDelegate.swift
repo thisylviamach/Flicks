@@ -12,11 +12,28 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        /*
+        window = UIWindow(frame: UIScreen.main.bounds)
+        
+        let storyboard = UIStoryboard(name: "Main" , bundle: nil)
+        
+        let tableViewNavigationCotroller = storyboard.instantiateViewController(withIdentifier: "MoviesNavigationController") as! UINavigationController
+        
+        let tableViewController = tableViewNavigationCotroller.topViewController as! MoviesCollectionViewController
+        tableViewController.tabBarItem.title = "table view"
+        
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = [tableViewController]
+        
+        window?.rootViewController = tabBarController
+        window?.makeKeyAndVisible()
+ */
         return true
+        
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
