@@ -30,9 +30,14 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         tableView.dataSource = self
         tableView.delegate = self
         searchBar.delegate = self
+
+        requestNetwork()
+        navigationController?.hidesBarsOnSwipe = true
         
-       
-        
+        // Do any additional setup after loading the view.
+    }
+    
+    func requestNetwork(){
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         
         let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")!
@@ -40,28 +45,29 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
         MBProgressHUD.showAdded(to: self.view, animated: true)
         
-        let task: URLSessionDataTask = session.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
+        let task: URLSessionDataTask = session.dataTask(with: request) {(
+            data: Data?,
+            response: URLResponse?,
+            error: Error?
+        ) in
             if let data = data {
                 if let dataDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary {
                     print(dataDictionary)
-                    
                     MBProgressHUD.hide(for: self.view, animated: false)
                     self.movies = dataDictionary["results"] as? [NSDictionary]
                     self.filteredData = self.movies
                     self.tableView.reloadData()
-                    
                 }
             }
         }
         task.resume()
-        
-        
-        // Do any additional setup after loading the view.
     }
+
     
+    //Search bar function
     func searchBar(_ searchBar:UISearchBar, textDidChange searchText:String){
         
-        //movie is unsafe, becuase movie can be nil
+        //movie is unsafe, because movie can be nil
         // want to protect my process if movie is empty
         // how?
         guard let movies = self.movies else {
@@ -76,7 +82,24 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         
         tableView.reloadData()
     }
+    
+       
+    
+    //Show cancel button
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        self.searchBar.showsCancelButton = true
+    }
+    
+
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        self.searchBar.showsCancelButton = false
+        self.searchBar.text = ""
+        self.searchBar.resignFirstResponder()
+    }
+    
     func refreshControlAction(_ refreshControl:UIRefreshControl){
+        refreshControl.endRefreshing()
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")!
         let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
@@ -120,9 +143,6 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         cell.overviewLabel.text = overview
         cell.posterView.setImageWith(imageUrl as! URL)
     
-    
-        //cell.textLabel?.text = title
-        //print("row \(indexPath.row)")
         return cell
     }
     /*
